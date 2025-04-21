@@ -1,0 +1,965 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GymStreak 120</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💪</text></svg>">
+    <style>
+        :root {
+            --primary-color: #3a7bd5;
+            --secondary-color: #00d2ff;
+            --background-color: #f8f9fa;
+            --card-color: #ffffff;
+            --text-color: #333333;
+            --completed-color: #4CAF50;
+            --rest-color: #9e9e9e;
+            --chest-color: #ef5350;
+            --back-color: #42a5f5;
+            --quads-color: #66bb6a;
+            --hamstring-color: #ffa726;
+            --arms-color: #ab47bc;
+            --cardio-color: #ffee58;
+            --cheat-none: #81c784;
+            --cheat-low: #fff176;
+            --cheat-moderate: #ffb74d;
+            --cheat-high: #e57373;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--background-color);
+            color: var(--text-color);
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+
+        header {
+            text-align: center;
+            padding: 1rem;
+            background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+            color: white;
+            border-radius: 0 0 10px 10px;
+            margin-bottom: 1rem;
+        }
+
+        .progress-container {
+            margin: 1rem 0;
+            background-color: var(--card-color);
+            padding: 1rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .progress-bar {
+            height: 20px;
+            background-color: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+            border-radius: 10px;
+            transition: width 0.3s ease;
+        }
+
+        .calendar {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
+            margin-bottom: 1rem;
+        }
+
+        .calendar-header {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .calendar-day {
+            aspect-ratio: 1/1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--card-color);
+            border-radius: 5px;
+            font-size: 14px;
+            cursor: pointer;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            transition: transform 0.2s ease;
+            position: relative;
+        }
+
+        .calendar-day:hover {
+            transform: scale(1.05);
+        }
+
+        .calendar-day.empty {
+            background-color: transparent;
+            box-shadow: none;
+            cursor: default;
+        }
+
+        .calendar-day.empty:hover {
+            transform: none;
+        }
+
+        .calendar-day.completed {
+            color: white;
+        }
+
+        .calendar-day .muscle-icon {
+            font-size: 16px;
+            margin-top: 2px;
+        }
+
+        .calendar-day .cheat-indicator {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: var(--card-color);
+            padding: 1.5rem;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+
+        .modal-header .close {
+            cursor: pointer;
+            font-size: 1.5rem;
+            background: none;
+            border: none;
+            font-weight: bold;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+        }
+
+        select, button {
+            width: 100%;
+            padding: 0.75rem;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            font-size: 1rem;
+        }
+
+        .toggle {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .submit-button {
+            background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+            color: white;
+            border: none;
+            padding: 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 1rem;
+            transition: transform 0.1s ease;
+        }
+
+        .submit-button:hover {
+            transform: translateY(-2px);
+        }
+
+        .submit-button:active {
+            transform: translateY(0);
+        }
+
+        footer {
+            text-align: center;
+            padding: 1rem;
+            margin-top: 2rem;
+            font-size: 0.8rem;
+            color: #666;
+        }
+
+        /* Switch toggle styles */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 24px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: var(--primary-color);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+
+        .notification-button {
+            display: block;
+            background-color: #f0f0f0;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            margin: 1rem auto;
+            cursor: pointer;
+        }
+
+        /* Color Legend */
+        .legend-container {
+            background-color: var(--card-color);
+            padding: 1rem;
+            border-radius: 10px;
+            margin: 1rem 0;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .legend-title {
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .legend-items {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 0.5rem;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            font-size: 0.85rem;
+        }
+
+        .legend-color {
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .legend-icon {
+            margin-right: 6px;
+            font-size: 16px;
+        }
+
+        /* Responsive design */
+        @media (max-width: 600px) {
+            .calendar-day {
+                font-size: 12px;
+            }
+
+            .legend-items {
+                grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+            }
+        }
+
+        /* PWA installation prompt */
+        #install-prompt {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: var(--card-color);
+            padding: 1rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            display: none;
+            z-index: 100;
+            text-align: center;
+            width: 80%;
+            max-width: 400px;
+        }
+
+        #install-prompt button {
+            padding: 0.5rem 1rem;
+            margin: 0.5rem;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        #install-button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+        }
+
+        #dismiss-button {
+            background-color: transparent;
+            border: 1px solid #ccc;
+        }
+    </style>
+</head>
+<body>
+<header>
+    <h1>GymStreak 120</h1>
+    <p>Your 120-Day Fitness Journey</p>
+</header>
+
+<div class="container">
+    <div class="progress-container">
+        <h2 id="progress-text">Day 0 of 120</h2>
+        <div class="progress-bar">
+            <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
+        </div>
+        <p id="date-range"></p>
+    </div>
+
+    <div class="legend-container">
+        <div class="legend-title">Muscle Groups</div>
+        <div class="legend-items">
+            <div class="legend-item">
+                <div class="legend-icon">💪</div>
+                <div class="legend-color" style="background-color: var(--chest-color);"></div>
+                <span>Chest + Tricep</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-icon">🏋️</div>
+                <div class="legend-color" style="background-color: var(--back-color);"></div>
+                <span>Back + Bicep</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-icon">🦵</div>
+                <div class="legend-color" style="background-color: var(--quads-color);"></div>
+                <span>Legs (Quads)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-icon">🦿</div>
+                <div class="legend-color" style="background-color: var(--hamstring-color);"></div>
+                <span>Legs (Hamstring)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-icon">💪</div>
+                <div class="legend-color" style="background-color: var(--arms-color);"></div>
+                <span>Arms</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-icon">🏃</div>
+                <div class="legend-color" style="background-color: var(--cardio-color);"></div>
+                <span>Cardio + Abs</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-icon">😴</div>
+                <div class="legend-color" style="background-color: var(--rest-color);"></div>
+                <span>Rest Day</span>
+            </div>
+        </div>
+
+        <div class="legend-title" style="margin-top: 1rem;">Cheat Levels</div>
+        <div class="legend-items">
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: var(--cheat-none);"></div>
+                <span>No Cheat</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: var(--cheat-low);"></div>
+                <span>Low Cheat</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: var(--cheat-moderate);"></div>
+                <span>Moderate Cheat</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: var(--cheat-high);"></div>
+                <span>High Cheat</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="calendar-header">
+        <div>Sun</div>
+        <div>Mon</div>
+        <div>Tue</div>
+        <div>Wed</div>
+        <div>Thu</div>
+        <div>Fri</div>
+        <div>Sat</div>
+    </div>
+    <div class="calendar" id="calendar-grid"></div>
+
+    <button id="enable-notifications" class="notification-button">Enable Workout Reminders</button>
+</div>
+
+<div id="day-modal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 id="modal-title">Day Details</h2>
+            <button class="close" id="close-modal">&times;</button>
+        </div>
+        <div id="modal-body">
+            <p id="modal-date">Date: </p>
+
+            <div class="form-group">
+                <label for="muscle-group">Muscle Group</label>
+                <select id="muscle-group">
+                    <option value="chestTricep">Chest + Tricep</option>
+                    <option value="backBicep">Back + Bicep</option>
+                    <option value="quads">Legs (Quads)</option>
+                    <option value="hamstring">Legs (Hamstring)</option>
+                    <option value="arms">Arms</option>
+                    <option value="cardioAbs">Full Cardio + Abs</option>
+                    <option value="rest">Rest Day</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="cheat-level">Cheat Level</label>
+                <select id="cheat-level">
+                    <option value="none">No Cheat</option>
+                    <option value="low">Low Cheat</option>
+                    <option value="moderate">Moderate Cheat</option>
+                    <option value="high">High Cheat</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <div class="toggle">
+                    <label for="no-smoking">No Smoking</label>
+                    <label class="switch">
+                        <input type="checkbox" id="no-smoking" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+
+                <div class="toggle">
+                    <label for="no-alcohol">No Alcohol</label>
+                    <label class="switch">
+                        <input type="checkbox" id="no-alcohol" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+
+            <button id="save-day" class="submit-button">Mark Day as Completed</button>
+            <p id="edit-status" style="text-align: center; margin-top: 1rem;"></p>
+        </div>
+    </div>
+</div>
+
+<div id="install-prompt">
+    <p>Add GymStreak 120 to your home screen for the best experience!</p>
+    <button id="install-button">Install</button>
+    <button id="dismiss-button">Not Now</button>
+</div>
+
+<footer>
+    <p>Designed by Sameeran Borah • Coded with Claude.ai</p>
+</footer>
+
+<script>
+    // Constants
+    const START_DATE = new Date(2025, 3, 1); // April 1, 2025 (months are 0-indexed)
+    const TOTAL_DAYS = 120;
+
+    // Cache DOM elements
+    const calendarGrid = document.getElementById('calendar-grid');
+    const progressText = document.getElementById('progress-text');
+    const progressFill = document.getElementById('progress-fill');
+    const dateRange = document.getElementById('date-range');
+    const dayModal = document.getElementById('day-modal');
+    const closeModal = document.getElementById('close-modal');
+    const modalTitle = document.getElementById('modal-title');
+    const modalDate = document.getElementById('modal-date');
+    const muscleGroupSelect = document.getElementById('muscle-group');
+    const cheatLevelSelect = document.getElementById('cheat-level');
+    const noSmokingToggle = document.getElementById('no-smoking');
+    const noAlcoholToggle = document.getElementById('no-alcohol');
+    const saveButton = document.getElementById('save-day');
+    const editStatus = document.getElementById('edit-status');
+    const notificationButton = document.getElementById('enable-notifications');
+    const installPrompt = document.getElementById('install-prompt');
+    const installButton = document.getElementById('install-button');
+    const dismissButton = document.getElementById('dismiss-button');
+
+    // App data
+    let workoutDays = [];
+    let selectedDayIndex = -1;
+
+    // Muscle group icons and colors
+    const muscleGroupIcons = {
+        chestTricep: '💪',
+        backBicep: '🏋️',
+        quads: '🦵',
+        hamstring: '🦿',
+        arms: '💪',
+        cardioAbs: '🏃',
+        rest: '😴'
+    };
+
+    // Color mappings
+    const muscleGroupColors = {
+        chestTricep: 'var(--chest-color)',
+        backBicep: 'var(--back-color)',
+        quads: 'var(--quads-color)',
+        hamstring: 'var(--hamstring-color)',
+        arms: 'var(--arms-color)',
+        cardioAbs: 'var(--cardio-color)',
+        rest: 'var(--rest-color)'
+    };
+
+    const cheatLevelColors = {
+        none: 'var(--cheat-none)',
+        low: 'var(--cheat-low)',
+        moderate: 'var(--cheat-moderate)',
+        high: 'var(--cheat-high)'
+    };
+
+    // Initialize the app
+    function initApp() {
+        loadWorkoutData();
+        renderCalendar();
+        updateProgress();
+
+        // Set up event listeners
+        closeModal.addEventListener('click', () => dayModal.style.display = 'none');
+        saveButton.addEventListener('click', saveWorkoutDay);
+        notificationButton.addEventListener('click', setupNotifications);
+
+        // Close modal when clicking outside
+        window.addEventListener('click', (e) => {
+            if (e.target === dayModal) {
+                dayModal.style.display = 'none';
+            }
+        });
+
+        // PWA installation
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            installPrompt.style.display = 'block';
+        });
+
+        installButton.addEventListener('click', () => {
+            installPrompt.style.display = 'none';
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then(() => {
+                    deferredPrompt = null;
+                });
+            }
+        });
+
+        dismissButton.addEventListener('click', () => {
+            installPrompt.style.display = 'none';
+        });
+
+        // Schedule notifications
+        scheduleNotifications();
+    }
+
+    // Load workout data from local storage or initialize new data
+    function loadWorkoutData() {
+        const savedData = localStorage.getItem('workoutData');
+
+        if (savedData) {
+            workoutDays = JSON.parse(savedData);
+
+            // Convert string dates back to Date objects
+            workoutDays.forEach(day => {
+                day.date = new Date(day.date);
+            });
+        } else {
+            // Initialize new data
+            generateWorkoutDays();
+            saveWorkoutData();
+        }
+    }
+
+    // Generate workout days for the 120-day period
+    function generateWorkoutDays() {
+        workoutDays = [];
+
+        for (let i = 0; i < TOTAL_DAYS; i++) {
+            const date = new Date(START_DATE);
+            date.setDate(date.getDate() + i);
+
+            // Determine if this day should be pre-marked as completed (first 21 days)
+            const isCompleted = i < 21;
+
+            // Create a default muscle group based on a simple rotation for first 21 days
+            let defaultMuscleGroup = null;
+            if (isCompleted) {
+                const dayOfWeek = date.getDay();
+                switch (dayOfWeek) {
+                    case 0: // Sunday - Rest
+                        defaultMuscleGroup = 'rest';
+                        break;
+                    case 1: // Monday - Chest + Tricep
+                        defaultMuscleGroup = 'chestTricep';
+                        break;
+                    case 2: // Tuesday - Back + Bicep
+                        defaultMuscleGroup = 'backBicep';
+                        break;
+                    case 3: // Wednesday - Legs (Quads)
+                        defaultMuscleGroup = 'quads';
+                        break;
+                    case 4: // Thursday - Arms
+                        defaultMuscleGroup = 'arms';
+                        break;
+                    case 5: // Friday - Legs (Hamstring)
+                        defaultMuscleGroup = 'hamstring';
+                        break;
+                    case 6: // Saturday - Cardio + Abs
+                        defaultMuscleGroup = 'cardioAbs';
+                        break;
+                }
+            }
+
+            workoutDays.push({
+                date: date,
+                isCompleted: isCompleted,
+                muscleGroup: defaultMuscleGroup,
+                cheatLevel: 'none',  // Default to no cheat
+                noSmoking: true,     // Default to no smoking
+                noAlcohol: true,     // Default to no alcohol
+                dayNumber: i + 1
+            });
+        }
+    }
+
+    // Save workout data to local storage
+    function saveWorkoutData() {
+        localStorage.setItem('workoutData', JSON.stringify(workoutDays));
+    }
+
+    // Render the calendar grid
+    function renderCalendar() {
+        calendarGrid.innerHTML = '';
+
+        // Calculate offset for the first day of April 2025 (which is a Tuesday - index 2)
+        const firstDayOfWeek = 2; // Tuesday
+
+        // Add empty cells for the days before April 1st
+        for (let i = 0; i < firstDayOfWeek; i++) {
+            const emptyDay = document.createElement('div');
+            emptyDay.className = 'calendar-day empty';
+            calendarGrid.appendChild(emptyDay);
+        }
+
+        // Add cells for all the workout days
+        workoutDays.forEach((day, index) => {
+            const dayCell = document.createElement('div');
+            dayCell.className = 'calendar-day';
+
+            // Format the cell based on completion status
+            if (day.isCompleted && day.muscleGroup) {
+                dayCell.style.backgroundColor = muscleGroupColors[day.muscleGroup];
+                dayCell.className += ' completed';
+            }
+
+            // Add the day number
+            const dayNumber = document.createElement('div');
+            dayNumber.textContent = day.date.getDate();
+            dayCell.appendChild(dayNumber);
+
+            // Add muscle group icon if completed
+            if (day.isCompleted && day.muscleGroup) {
+                const icon = document.createElement('div');
+                icon.className = 'muscle-icon';
+                icon.textContent = muscleGroupIcons[day.muscleGroup];
+                dayCell.appendChild(icon);
+            }
+
+            // Add cheat indicator if applicable
+            if (day.isCompleted && day.cheatLevel !== 'none') {
+                const cheatIndicator = document.createElement('div');
+                cheatIndicator.className = 'cheat-indicator';
+                cheatIndicator.style.backgroundColor = cheatLevelColors[day.cheatLevel];
+                dayCell.appendChild(cheatIndicator);
+            }
+
+            // Add click event to open modal
+            dayCell.addEventListener('click', () => openDayModal(index));
+
+            calendarGrid.appendChild(dayCell);
+        });
+
+        // Update date range display
+        const endDate = new Date(START_DATE);
+        endDate.setDate(endDate.getDate() + TOTAL_DAYS - 1);
+
+        const formatter = new Intl.DateTimeFormat('en-US', {
+            month: 'long',
+            day: 'numeric',
+            year: 'numeric'
+        });
+
+        dateRange.textContent = `${formatter.format(START_DATE)} - ${formatter.format(endDate)}`;
+    }
+
+    // Update progress indicators
+    function updateProgress() {
+        const completedDays = workoutDays.filter(day => day.isCompleted).length;
+        const progressPercentage = (completedDays / TOTAL_DAYS) * 100;
+
+        progressText.textContent = `Day ${completedDays} of ${TOTAL_DAYS}`;
+        progressFill.style.width = `${progressPercentage}%`;
+    }
+
+    // Open the day detail modal
+    function openDayModal(dayIndex) {
+        const day = workoutDays[dayIndex];
+        selectedDayIndex = dayIndex;
+
+        // Format date
+        const formatter = new Intl.DateTimeFormat('en-US', {
+            weekday: 'long',
+            month: 'long',
+            day: 'numeric',
+            year: 'numeric'
+        });
+
+        modalTitle.textContent = `Day ${day.dayNumber}`;
+        modalDate.textContent = `Date: ${formatter.format(day.date)}`;
+
+        // Set form values
+        if (day.muscleGroup) {
+            muscleGroupSelect.value = day.muscleGroup;
+        } else {
+            muscleGroupSelect.value = 'chestTricep'; // Default
+        }
+
+        cheatLevelSelect.value = day.cheatLevel || 'none';
+        noSmokingToggle.checked = day.noSmoking !== false;  // Default to true
+        noAlcoholToggle.checked = day.noAlcohol !== false;  // Default to true
+
+        // Handle different states
+        const canEdit = canEditDay(day);
+        const isCompleted = day.isCompleted;
+
+        // Set UI state based on editability
+        muscleGroupSelect.disabled = !canEdit;
+        cheatLevelSelect.disabled = !canEdit;
+        noSmokingToggle.disabled = !canEdit;
+        noAlcoholToggle.disabled = !canEdit;
+
+        if (!canEdit) {
+            saveButton.style.display = 'none';
+            editStatus.textContent = "This day is not yet available for editing";
+            editStatus.style.color = "#999";
+        } else if (isCompleted) {
+            saveButton.textContent = "Update Day";
+            saveButton.style.display = 'block';
+            editStatus.textContent = "";
+        } else {
+            saveButton.textContent = "Mark Day as Completed";
+            saveButton.style.display = 'block';
+            editStatus.textContent = "";
+        }
+
+        dayModal.style.display = 'flex';
+    }
+
+    // Check if a day can be edited
+    function canEditDay(day) {
+        // First 21 days can always be edited (retroactive tracking)
+        if (day.dayNumber <= 21) {
+            return true;
+        }
+
+        // For future days, only allow editing on or after the actual date
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        const dayDate = new Date(day.date);
+        dayDate.setHours(0, 0, 0, 0);
+
+        return dayDate <= today;
+    }
+
+    // Save workout day data
+    function saveWorkoutDay() {
+        if (selectedDayIndex < 0) return;
+
+        const day = workoutDays[selectedDayIndex];
+
+        day.isCompleted = true;
+        day.muscleGroup = muscleGroupSelect.value;
+        day.cheatLevel = cheatLevelSelect.value;
+        day.noSmoking = noSmokingToggle.checked;
+        day.noAlcohol = noAlcoholToggle.checked;
+
+        saveWorkoutData();
+        renderCalendar();
+        updateProgress();
+
+        // Close modal
+        dayModal.style.display = 'none';
+
+        // Reschedule notifications
+        scheduleNotifications();
+    }
+
+    // Set up notifications
+    function setupNotifications() {
+        if (!('Notification' in window)) {
+            alert('This browser does not support notifications');
+            return;
+        }
+
+        Notification.requestPermission().then(permission => {
+            if (permission === 'granted') {
+                notificationButton.textContent = 'Notifications Enabled';
+                notificationButton.disabled = true;
+                scheduleNotifications();
+            }
+        });
+    }
+
+    // Schedule notifications
+    function scheduleNotifications() {
+        // This is a simple implementation that uses setTimeout for demonstration
+        // In a real app, you'd use service workers for background notifications
+
+        // Clear any existing notifications
+        if ('serviceWorker' in navigator && 'PushManager' in window) {
+            // Service worker implementation would go here
+            console.log('Service worker support available');
+        } else {
+            // Fallback to local notifications
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            // Find today's workout
+            const todayWorkout = workoutDays.find(day => {
+                const dayDate = new Date(day.date);
+                dayDate.setHours(0, 0, 0, 0);
+                return dayDate.getTime() === today.getTime();
+            });
+
+            if (todayWorkout && !todayWorkout.isCompleted) {
+                // Set up reminder times
+                const reminderTimes = [
+                    { hour: 22, minute: 0 },  // 10:00 PM
+                    { hour: 22, minute: 30 }, // 10:30 PM
+                    { hour: 23, minute: 0 },  // 11:00 PM
+                    { hour: 23, minute: 30 }, // 11:30 PM
+                    { hour: 0, minute: 0 }    // 12:00 AM
+                ];
+
+                reminderTimes.forEach(time => {
+                    const now = new Date();
+                    const reminderTime = new Date(
+                        now.getFullYear(),
+                        now.getMonth(),
+                        now.getDate(),
+                        time.hour,
+                        time.minute
+                    );
+
+                    // If time is in the past for today, don't schedule
+                    if (reminderTime < now) return;
+
+                    const timeUntilReminder = reminderTime - now;
+
+                    setTimeout(() => {
+                        // Only show if still not completed
+                        const updatedDay = workoutDays.find(d => d.dayNumber === todayWorkout.dayNumber);
+                        if (!updatedDay.isCompleted && Notification.permission === 'granted') {
+                            new Notification('GymStreak 120 Reminder', {
+                                body: `Don't forget to log your workout for Day ${todayWorkout.dayNumber}!`,
+                                icon: '/icon-192.png'
+                            });
+                        }
+                    }, timeUntilReminder);
+                });
+            }
+        }
+    }
+
+    // Service worker registration for PWA capabilities
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/service-worker.js')
+                .then(registration => {
+                    console.log('Service worker registered:', registration);
+                })
+                .catch(error => {
+                    console.log('Service worker registration failed:', error);
+                });
+        });
+    }
+
+    // Initialize the app
+    initApp();
+</script>
+</body>
+</html>
