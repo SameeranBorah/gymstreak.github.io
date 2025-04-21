@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>I Love You, Thon Thon</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #ffebee;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .container {
+            text-align: center;
+            position: relative;
+            max-width: 90%;
+            padding: 20px;
+        }
+
+        h1 {
+            color: #e91e63;
+            font-size: 3rem;
+            margin-bottom: 20px;
+            animation: fadeIn 2s ease;
+        }
+
+        p {
+            color: #ad1457;
+            font-size: 1.5rem;
+            margin-bottom: 30px;
+            animation: fadeIn 3s ease;
+        }
+
+        .signature {
+            color: #880e4f;
+            font-style: italic;
+            font-size: 1.8rem;
+            margin-top: 40px;
+            animation: fadeIn 4s ease;
+        }
+
+        .heart {
+            position: absolute;
+            color: #e91e63;
+            font-size: 24px;
+            animation: floatHeart 6s ease-in-out infinite;
+            opacity: 0;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes floatHeart {
+            0% { transform: translate(0, 0); opacity: 0; }
+            10% { opacity: 0.8; }
+            90% { opacity: 0.8; }
+            100% { transform: translate(var(--tx), var(--ty)); opacity: 0; }
+        }
+
+        .heart-container {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+        }
+
+        .photo-frame {
+            width: 400px;
+            max-width: 90%;
+            margin: 0 auto 30px;
+            animation: pulse 2s infinite alternate;
+        }
+
+        .photo-frame img {
+            width: 100%;
+            height: auto;
+        }
+
+        @keyframes pulse {
+            from { transform: scale(1); filter: drop-shadow(0 5px 15px rgba(0,0,0,0.2)); }
+            to { transform: scale(1.03); filter: drop-shadow(0 8px 20px rgba(233,30,99,0.4)); }
+        }
+
+        .special-message {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #d81b60;
+            margin: 30px 0;
+            animation: highlight 3s infinite alternate;
+        }
+
+        @keyframes highlight {
+            from { text-shadow: 0 0 5px rgba(233,30,99,0.3); }
+            to { text-shadow: 0 0 15px rgba(233,30,99,0.7); }
+        }
+
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 2rem;
+            }
+
+            p {
+                font-size: 1.2rem;
+            }
+
+            .signature {
+                font-size: 1.5rem;
+            }
+
+            .photo-frame {
+                width: 280px;
+            }
+
+            .special-message {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="heart-container" id="heartContainer"></div>
+
+<div class="container">
+    <div class="photo-frame">
+        <!-- This will reference the heart-shaped image in the same folder -->
+        <img src="heart-image.jpg" alt="Us Together">
+    </div>
+
+    <h1>I Love You, Thon Thon ❤️</h1>
+
+    <div class="special-message">You Mean Everything To Me</div>
+
+    <p>Every moment with you makes my heart skip a beat.<br>
+        You're the sunshine that brightens my darkest days.<br>
+        My life is more beautiful because you're in it.</p>
+
+    <p>I cherish every laugh we share,<br>
+        Every memory we create,<br>
+        And every second I get to call you mine.</p>
+
+    <div class="signature">With All My Love,<br>Sameeran</div>
+</div>
+
+<script>
+    // Create floating hearts animation
+    const heartContainer = document.getElementById('heartContainer');
+    const colors = ['#e91e63', '#ad1457', '#c2185b', '#f06292', '#880e4f'];
+    const symbols = ['❤️', '💕', '💗', '💓', '💘'];
+
+    function createHeart() {
+        const heart = document.createElement('div');
+        heart.classList.add('heart');
+
+        // Random position at bottom
+        const startX = Math.random() * window.innerWidth;
+        const startY = window.innerHeight;
+
+        // Random end position at top
+        const endX = startX + (Math.random() * 200 - 100);
+        const endY = -100;
+
+        heart.style.setProperty('--tx', `${endX - startX}px`);
+        heart.style.setProperty('--ty', `${endY - startY}px`);
+        heart.style.left = `${startX}px`;
+        heart.style.top = `${startY}px`;
+
+        // Random heart style
+        heart.style.color = colors[Math.floor(Math.random() * colors.length)];
+        heart.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+
+        // Random animation duration
+        const duration = 6 + Math.random() * 4;
+        heart.style.animationDuration = `${duration}s`;
+
+        heartContainer.appendChild(heart);
+
+        // Remove after animation
+        setTimeout(() => {
+            heart.remove();
+        }, duration * 1000);
+    }
+
+    // Create hearts at intervals
+    setInterval(createHeart, 300);
+
+    // Create initial hearts
+    for (let i = 0; i < 10; i++) {
+        setTimeout(createHeart, i * 300);
+    }
+</script>
+</body>
+</html>
